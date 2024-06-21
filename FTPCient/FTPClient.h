@@ -37,8 +37,6 @@ public:
 
     void run();     //启动FTP客户端
 
-
-private:
     //将命令行分割为命令和其他参数
     int split(struct str_command *command , char *cline);   
 

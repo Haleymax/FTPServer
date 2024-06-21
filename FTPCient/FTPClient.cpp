@@ -104,3 +104,47 @@ void FTPClient::run(){
     }
 
 }
+
+
+//将命令行分割为命令和参数
+int FTPClient::split(struct str_command *command , char *cline){
+    int i = 0 , p = 0;
+
+    cline[strlen(cline) - 1] = '\0';   //去掉末尾的换行符号
+
+    while (cline[p] != '\0' && (cline[p] == ' ' || cline[p] == '\t'))
+    {
+        p++;
+    }
+
+    while (cline[p] != '\0')
+    {
+        //分配内存存储参数
+        if ((command->argv[i] == (char *)malloc(sizeof(char)*BUFFSIZE)) == NULL)
+        {
+            perror("fail to malloc");
+            return -1;
+        }
+
+        //获取参数内容
+        int j = 0;
+        while (cline[p] != '\0' && cline[p] != ' ' && cline[p] != '\t')
+        {
+            command->argv[i][j++] = cline[p++];
+        }
+        command->argv[i][j] = '\0'; //添加字符串结束符号
+
+        i++;
+
+        while (cline[p] != '\0' && (cline[p] == ' ' || cline[p] == '\t'))
+        {
+            p++;
+        }
+        
+    }
+    
+    command->argv[i] = NULL;  //参数的末尾以空结尾
+    command->name = command->argv[0];   //字符串赋值
+
+    return i;
+}
