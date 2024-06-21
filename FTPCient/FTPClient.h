@@ -64,7 +64,7 @@ private:
     int do_ser_cd(char *path , int sockfd);
 
     //处理退出命令
-    int do_quit(int sockfd);
+    int do_quit(int sock_fd);
 };
 
 #endif
