@@ -148,3 +148,32 @@ int FTPClient::split(struct str_command *command , char *cline){
 
     return i;
 }
+
+
+//处理连接命令
+int FTPClient::do_connect(char *ip , struct sockaddr_in *serv_addr , int *sock_fd){
+    //清空地址结构体
+    bzero(serv_addr , sizeof(struct sockaddr_in));
+    serv_addr->sin_family = AF_INET;
+
+    //将点分十进制转换为网络字节序
+    inet_pton(AF_INET , ip , &(serv_addr->sin_addr));
+    serv_addr->sin_port = htons(PORT);
+
+    //创建套接字
+    *sock_fd = socket(AF_INET , SOCK_STREAM , 0);
+    if (*sock_fd < 0)
+    {
+        perror("fail to create socket");
+        return -1;
+    }
+
+    //连接服务器
+    if(connect(*sock_fd , (sockaddr *)serv_addr , sizeof(struct sockaddr_in)) < 0){
+        perror("fail to connect");
+        return -2;
+    }
+
+    return 0;
+    
+}
