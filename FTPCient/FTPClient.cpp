@@ -177,3 +177,67 @@ int FTPClient::do_connect(char *ip , struct sockaddr_in *serv_addr , int *sock_f
     return 0;
     
 }
+
+//处理获取文件命令
+int FTPClient::do_get(const char *src , const char *dest , int sock_fd){
+    char *dest_file;    //目标文件路径
+    struct stat stat_buf;  //文件状态
+    char *p , buf[MAXBUFF];
+    int fd , len;
+    int res = -1;
+
+    //判断文件路径是普通文件还是目录
+    if(src[strlen(src) - 1] == '/'){   //最后以  '/'结尾代表是一个目录
+        cout << "ERROR: source is a directory" << endl;
+        return -2;
+    }
+
+    //获取目标文件名
+    if((p = (char *)strrchr(src , '/')) != NULL){
+        dest_file = p + 1;  // '/' 后面的文件名
+    }else{
+        dest_file = (char *)src;  //表示直接就是文件名
+    }
+
+    //打开本地文件
+    if((fd = open(dest , O_WRONLY | O_CREAT | O_TRUNC , 0644)) < 0){  //以只写方式（O_WRONLY）打开它，如果文件已存在则将其截断为空（O_TRUNC），如果文件不存在则创建它（O_CREAT）
+        perror("fail to open file");
+        return -3;
+    }
+
+
+    //发送GET命令到服务器
+    sprintf(buf,"GET %s\r\n",src);
+    if (write(sock_fd , buf , strlen(buf)) < 0)
+    {
+        perror("fail to write");
+        return -4;
+    }
+
+    //读取服务器响应
+    if ((len = read(sock_fd , buf , MAXBUFF)) < 0)
+    {
+        perror("fail to read");
+        return -5;
+    }
+    buf[len] = '\0';
+    
+    //判断服务器返回的信息是不是OK
+    if (strncmp(buf , "OK" , 2) != 0)
+    {
+        cout << "ERROR: " << buf << endl;
+        return -6;
+    }
+
+    //读取文件内容并写入本地文件
+    while ((len = read(sock_fd , buf , MAXBUFF)) > 0)
+    {
+        if (write())
+        {
+            /* code */
+        }
+        
+    }
+    
+    
+}
