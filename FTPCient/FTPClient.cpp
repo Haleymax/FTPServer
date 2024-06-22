@@ -232,12 +232,86 @@ int FTPClient::do_get(const char *src , const char *dest , int sock_fd){
     //读取文件内容并写入本地文件
     while ((len = read(sock_fd , buf , MAXBUFF)) > 0)
     {
-        if (write())
+        if (write(fd , buf ,len) < 0)
         {
-            /* code */
+            perror("fail to write");
+            return -7;
         }
         
     }
+
+    close(fd);
+
+    cout<< "File \" " << src << "\" has been download as \" " << dest_file << "\"" << endl;
+
+    return 0;
     
+}
+
+//处理上传文件命令
+int FTPClient::do_put(const char *src , const char *dest , int sock_fd){
+    struct stat stat_buf;   //存储文件信息
+
+    char *p , buf[MAXBUFF];
+    int fd , len;
+    int res = -1;
+
+    //检查文件目录是否存在
+    if(src == NULL || dest == NULL){
+        cout << "ERROR : wrong command" << endl;
+        return -1;
+    }
+
+    //获取本地文件状态
+    if(stat(src , &stat_buf) < 0){
+        perror("fail to get file stat");
+        return -2;
+    }
+
+    //如果源文件路径的最后一个字符是/，则说明源文件不是普通文件，而是目录
+    if(S_ISDIR(stat_buf.st_mode)){
+        cout << "ERROR: source is a directory" << endl;
+        return -3;
+    }
+
+    //打开本地文件
+    if((fd = open(src , O_RDONLY)) < 0){
+        perror("fail to open file");
+        return -4;
+    }
+
+    //发送PUT命令到服务器
+    sprintf(buf , "PUT %s\r\n",dest);
+    if (write(sock_fd , buf , strlen(buf)) < 0)
+    {
+        perror("fail to write");
+        return -5;
+    }
+
+    //读取服务器响应
+    if((len = read(sock_fd , buf , MAXBUFF)) < 0){
+        perror("fail to read");
+        return -6;
+    }
+    buf[len] = '\0';
+
+    //如果服务器响应不是OK，则打印错误信息并返回
+    if(strncmp(buf , "OK" , 2) != 0){
+        cout << "ERROR: " << buf << endl;
+        return -7;
+    }
+
+    //读取本地文件内容并写入服务器
+    while ((len = read(fd , buf , MAXBUFF)) > 0){
+        if (write(sock_fd , buf , len) < 0){
+            perror("fail to write");
+            return -8;
+        }  
+    }
+
+    close(fd);
+    cout << "file \"" << src << "\" has been uploaded as \"" << dest << "\"" << endl;
+
+    return 0;
     
 }
