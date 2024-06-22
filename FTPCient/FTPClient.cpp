@@ -315,3 +315,71 @@ int FTPClient::do_put(const char *src , const char *dest , int sock_fd){
     return 0;
     
 }
+
+
+//处理改变目录命令
+int FTPClient::do_cd(char *path){
+    char buf[MAXBUFF];
+
+    //发送CD命令到服务器
+    sprintf(buf , "CD %s\r\n" , path);
+    if(write(sock_fd , buf , strlen(buf)) < 0){
+        perror("fail to write");
+        return -1;
+    }
+
+    //读取服务器响应
+    if(read(sock_fd , buf , MAXBUFF) < 0){
+        perror("fail to read");
+        return -2;
+    }
+
+    buf[strlen(buf) - 1 ] = '\0';  //将换行符改为空
+
+    //打印服务器响应信息
+    cout << buf << endl;
+
+    return 0;
+}
+
+//处理列出目录内容都命令
+int FTPClient::do_ls(char *path){
+    char buf[MAXBUFF];
+
+    //发送LS命令到服务器
+    sprintf(buf , "LS %d\r\n" , path);
+    if (write(this->sock_fd , buf , MAXBUFF) < 0)
+    {
+        perror("fail to write");
+        return -1;
+    }
+
+    //读取服务器响应
+    while (read(this->sock_fd , buf , MAXBUFF) > 0){
+        cout << buf; //打印服务器返回的信息
+    }
+    
+    return 0;
+}
+
+
+//处理服务改变目录的命令
+int FTPClient::do_ser_ls(char *path , int sockfd){
+    char buf[MAXBUFF];
+
+    //发送LS命令到服务器
+    sprintf(buf , "LS %s\r\n",path);
+    if (write(sockfd , buf , strlen(buf)) < 0)
+    {
+        perror("fail to write");
+        return -1;
+    }
+
+    //读取服务器响应
+    while (read(sockfd , buf , MAXBUFF) > 0)
+    {
+        cout << buf;
+    }
+    
+    return 0;
+}
