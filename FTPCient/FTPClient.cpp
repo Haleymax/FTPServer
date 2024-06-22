@@ -383,3 +383,56 @@ int FTPClient::do_ser_ls(char *path , int sockfd){
     
     return 0;
 }
+
+//处理服务端改变目录命令
+int FTPClient::do_ser_cd(char *path , int sockfd){
+    char buf[MAXBUFF];
+
+    //发送CD命令到服务器
+    sprintf(buf , "CD %s\r\n" , path);
+    if(write(sockfd , buf , strlen(buf)) < 0){
+        perror("fail to write");
+        return -1;
+    }
+
+    //读取服务器响应
+    if (read(sockfd , buf , MAXBUFF) < 0)
+    {
+        perror("fail to read");
+        return -2;
+    }
+    buf[strlen(buf) - 1] = '\0';
+
+    cout << buf << endl;
+
+    return 0;
+    
+}
+
+//处理退出命令
+int FTPClient::do_quit(int sock_fd){
+    char buf[MAXBUFF];
+
+    //发送QUIT命令到服务器
+    sprintf(buf , "QUIT \r\n");
+    if (write(sock_fd , buf , strlen(buf)) < 0)
+    {
+        perror("fail to write");
+        return -1;
+    }
+
+    //读取服务器响应
+    if (read(sock_fd , buf , MAXBUFF) < 0)
+    {
+        perror("fail to read");
+        return -2;
+    }
+
+    buf[strlen(buf) - 1] = '\0';
+
+    //打印服务器响应信息
+    cout << buf << endl;
+
+    return -3;    
+    
+}
