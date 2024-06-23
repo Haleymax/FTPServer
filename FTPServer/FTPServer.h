@@ -1,4 +1,5 @@
 #pragma once
+#include "iostream"
 #include "cstring"
 #include "cstdio"
 #include "unistd.h"
@@ -25,6 +26,9 @@ public:
 
     //初始化服务器
     int init(int sock_opt);
+
+    //处理客户端请求
+    void serve_client();
 
     //处理客户端的PUT请求
     int do_get(int sockfd , char *file);

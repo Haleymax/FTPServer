@@ -35,6 +35,42 @@ int Server::init(int sock_opt){
    }
 
    return 0;
-   
-    
+}
+
+//处理客户端请求
+void Server::serve_client(){
+    cout << "waiting connections ... " << endl;
+
+    while (true)
+    {
+        struct sockaddr_in cli_addr;
+        socklen_t len = sizeof(cli_addr);
+
+        int connfd;
+
+        if ((connfd = accept(listenfd , (struct sockaddr *)&cli_addr , &len)) < 0)
+        {
+            perror("fail to accept");
+            exit(-2);
+        }
+
+        pid_t pid;
+        if ((pid = fork()) < 0 )
+        {
+            perror("fail to fork");
+            exit(-3);
+        }
+        
+
+        if (pid == 0)   //监测是否处于在子进程中   将其与父进程分离使父进程可以继续进行监听
+        {
+            close(listenfd);   //子进程只需要处理这个接收的请求需要关闭监听
+            handle_client(connfd);   //处理客户端请求
+            close(connfd);
+            exit(0);
+        }else
+        {
+            close(connfd);   //防止父进程阻塞需要关闭连接套接字继续进行监听
+        }     
+    }
 }
