@@ -74,3 +74,61 @@ void Server::serve_client(){
         }     
     }
 }
+
+
+//处理客户端具体请求(数据分发)
+void Server::handle_client(int connfd){
+    char buf[BUFFSIZE];
+    while (true)
+    {
+        if (read(connfd , buf , BUFFSIZE) < 0)
+        {
+            exit(-4);
+        }
+
+        if (strstr(buf , "GET") == buf){
+            if (do_put(connfd , &buf[4]) < 0)
+            {
+                cout << "error occurs while putting" << endl;
+            } else if (strstr(buf , "PUT") == buf)
+            {
+                if (do_get(connfd , &buf[4]) < 0)
+                {
+                    cout << "error occurs while getting" << endl;
+                }
+            }else if (strstr(buf , "CD") == buf)
+            {
+                if (do_cd(connfd , &buf[4]) < 0)
+                {
+                    cout << "error occurs while changing directory" << endl;
+                }
+            }else if (strstr(buf , "LS") == buf)
+            {
+                if ( do_ls(connfd , &buf[4]) < 0)
+                {
+                    cout << "error occurs while listing" << endl;
+                }
+            }else if (strstr(buf , "BYE") == buf)
+            {
+                break;
+            }else
+            {
+                cout << "error command" << endl;
+                exit(-5);
+            }
+            
+            
+            
+            
+            
+            
+            
+        }
+        {
+            /* code */
+        }
+        
+        
+    }
+    
+}

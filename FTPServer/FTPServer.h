@@ -31,7 +31,7 @@ public:
     void serve_client();
 
     //处理客户端的PUT请求
-    int do_get(int sockfd , char *file);
+    int do_put(int sockfd , char *file);
 
     //处理客户端GET请求
     int do_get(int sockfd , char *file);
@@ -40,7 +40,10 @@ public:
     void handle_client(int connfd);
 
     //处理客户端LS请求
-    void  do_ls(int sockfd , char *path);
+    int  do_ls(int sockfd , char *path);
+
+    //处理客户端CD请求
+    int do_cd(int sockfd , char *path);
 };
 
 
