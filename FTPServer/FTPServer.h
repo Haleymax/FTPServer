@@ -1,5 +1,6 @@
 #pragma once
 #include "cstring"
+#include "cstdio"
 #include "unistd.h"
 #include "sys/socket.h"
 #include "arpa/inet.h"
@@ -10,6 +11,8 @@
 #define PORT 8082
 #define BUFFSIZE 64
 #define MAXBUFF 128
+
+using namespace std;
 
 class Server
 {
