@@ -116,19 +116,107 @@ void Server::handle_client(int connfd){
                 cout << "error command" << endl;
                 exit(-5);
             }
-            
-            
-            
-            
-            
-            
-            
-        }
-        {
-            /* code */
-        }
-        
-        
+        }   
     }
     
+}
+
+//处理客户端的GET请求
+int Server::do_put(int sockfd , char *file){
+    struct stat stat_buf;
+    int len , fd;
+    char buf[BUFFSIZE];
+    int res = -1;
+
+    if ((fd = open(file , O_RDONLY)) < 0)
+    {
+        write(sockfd , "ERROR: fail to open serve file\n" , strlen("ERROR : fail to open serve file\n"));
+        return -1;
+    }
+
+    if (fstat(fd , &stat_buf) < 0)
+    {
+        write(sockfd , "ERROR: fail to stat server file \n" , strlen("ERROR:fail to stat server file\n"));
+        goto end;
+    }
+    
+    sprintf(buf , "OK . FILE SIZE : %d" , stat_buf.st_size);
+    write(sockfd , buf , strlen(buf));
+    
+    while ((len = read(fd , buf , MAXBUFF)) > 0)
+    {
+        write(sockfd , buf ,len);
+    }
+
+    if (len < 0 && errno == EINTR)
+    {
+        perror("fail to read");
+        goto end;
+    }
+    
+    cout << "OK" << endl;
+    res = 0;
+    
+
+end:
+    close(fd);
+    return res;
+}
+
+int Server::do_ls(int sockfd , char *path){
+    char cmd[BUFFSIZE] , buf[MAXBUFF];
+    int fd , len;
+    int res = -1;
+
+    sprintf(cmd , "ls %s > temp.txt" , path);
+    fprintf(stdout , "===from client:system(%s)\n" , cmd);
+    system(cmd);
+
+    if ((fd == open("temp.txt" , O_RDONLY)) < 0)
+    {
+        write(sockfd , "ERROR: fail to ls server file\n" , strlen("ERROR:fail to ls server file\n"));
+        return -1;
+    }
+
+    write(sockfd ,  "OK\n" , 4);
+    read(sockfd , cmd , BUFFSIZE);
+    while ((len == read(fd , buf , MAXBUFF)) > 0)
+        write(sockfd , buf , len);
+
+    if (len < 0)
+    {
+        perror("fail to read");
+        goto end;
+    }
+
+    std::cout << "!ls OK" << std::endl;
+    res = 0;
+end:
+    close(fd);
+    return res;
+}
+
+//处理CD命令
+int Server::do_cd(int sockfd , char *path) {
+    if (chdir(path) < 0) {
+            perror("fail to change directory\n");
+            write(sockfd, "ERROR: cannot change server directory\n", strlen("ERROR: cannot change server directory\n"));
+            return -1;
+        }
+
+        write(sockfd, "OK\n", 3);
+        return 0;
+    
+}
+
+int main() {
+    Server server;
+    int sock_opt = 1; // SO_REUSEADDR选项
+
+    if (server.init(sock_opt) < 0)
+        exit(-1);
+
+    server.serve_client();
+
+    return 0;
 }
